@@ -31,7 +31,7 @@ jobs:
         mkdir tc
         wget -qO- https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-9.0.0_r3/clang-4691093.tar.gz | tar -xz -C tc
         git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b master-kernel-build-2021 x64
-        git clome https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master-kernel-build-2021 x32
+        git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master-kernel-build-2021 x32
         export PATH="$PWD/tc/bin:$PWD/x64/bin:$PWD/x32/bin:/bin"
         
         curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s ${{ github.event.inputs.kernelsu_branch }}
