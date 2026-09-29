@@ -34,7 +34,8 @@ jobs:
             echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
     - name: Clone kernelSU-Next
       run: |
-            wget https://raw.githubusercontent.com/TheSillyOk/kernel_ls_patches/refs/heads/master/scope-min-hooks-v1.9.patch
+            wget https://raw.githubusercontent.com/rksuorg/kernel_patches/refs/heads/master/manual_hook/kernel-4.4_4.9.patch
+            patch -p1 < kernel-4.4_4.9.patch
             patch -p1 < scope-min-hooks-v1.9.patch
             curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
     - name: Build Kernel
