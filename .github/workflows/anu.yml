@@ -1,0 +1,62 @@
+name: build AOSP
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Kernel
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Prepare timezone 
+      run: |
+            sudo rm /etc/localtime
+            sudo ln -s /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+    - name: Install Dependencies
+      run: |
+            sudo apt update -y
+            sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 -y
+            sudo apt install libssl-dev -y
+    - name: Clone Toolchains
+      run: |
+            wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-9.0.0_r3/clang-4691093.tar.gz -O clang.tar.gz
+            mkdir -p clang && tar -xf clang.tar.gz -C clang
+            git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-19.1 --depth=1 gcc64
+            git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git -b lineage-19.1 --depth=1 gcc32
+    - name: Setup Environment
+      run: |
+            echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%d%m%Y-%H%M")" >> $GITHUB_ENV
+            echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
+            echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
+            echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
+    - name: Clone kernelSU-Next
+      run: |
+            Next v3.4.0 | SuSFS
+            curl -LSs https://raw.githubusercontent.com/ThRE-Team/KernelSU-Next/main/kernel/setup.sh | bash -s v3.4.0-enjoy
+    - name: Build Kernel
+      run: |
+            export ARCH=arm64
+            export PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$GCC32_PATH/bin:$PATH"
+            export KBUILD_BUILD_USER=user-tobrut
+            export KBUILD_BUILD_HOST=exotic-host
+            export KBUILD_COMPILER_STRING="$$CLANG_PATH/clang"
+            make O=out ARCH=arm64 stock_defconfig 
+            make -j$(nproc --all) O=out ARCH=arm64 HOSTCC=clang DTC=dtc \
+              CLANG_TRIPLE=$CLANG_PATH/aarch64-linux-gnu- \
+              CROSS_COMPILE=$GCC64_PATH/bin/aarch64-linux-android- \
+              CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-linux-gnueabi-         
+            mv out/.config out/stock_defconfig.txt
+    - name: Clone Anykernel3
+      run: |
+            git clone -b CPH2083 --depth=1 https://github.com/malkist01/anykernel3 AnyKernel3
+            cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+            cd AnyKernel3
+            zip -r "../Teletubies-${{ env.BUILD_TIME }}.zip" *
+    - name: Upload Flashable zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: Teletubies-CPH2083-${{ env.BUILD_TIME }}
+        path: AnyKernel3/*
