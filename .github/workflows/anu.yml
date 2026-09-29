@@ -32,10 +32,11 @@ jobs:
             echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
             echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
             echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
-#    - name: Clone kernelSU-Next
-#      run: |
-#            curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
-#            curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
+    - name: Clone kernelSU-Next
+      run: |
+            wget https://raw.githubusercontent.com/TheSillyOk/kernel_ls_patches/refs/heads/master/scope-min-hooks-v1.9.patch
+            patch -p1 < scope-min-hooks-v1.9.patch
+            curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
     - name: Build Kernel
       run: |
             export ARCH=arm64
