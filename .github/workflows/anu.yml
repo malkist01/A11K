@@ -8,6 +8,7 @@ on:
       - 'README.md'
     branches:
       - test
+      
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -52,10 +53,11 @@ jobs:
             
     - name: Clone Kernel
       run: |
-            git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git -b lineage-19.1 --depth=1 gcc32
+            git clone https://github.com/malkist01/A11K.git -b ksu --depth=1 kernel
 
     - name: Clone kernelSU-Next
       run: |
+           cd kernel
            echo "CONFIG_KSU=y" >> ./arch/arm64/configs/stock_defconfig
            echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> ./arch/arm64/configs/stock_defconfig
            echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/stock_defconfig
