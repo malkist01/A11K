@@ -66,6 +66,7 @@ jobs:
            curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
     - name: Build Kernel
       run: |
+            PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$GCC32_PATH/bin:$PATH"
             export ARCH=arm64
             export PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$GCC32_PATH/bin:$PATH"
             export KBUILD_BUILD_USER=user-tobrut
@@ -80,6 +81,7 @@ jobs:
 
     - name: Clone Anykernel3
       run: |
+            cd kernel
             git clone -b CPH2083 --depth=1 https://github.com/malkist01/anykernel3 AnyKernel3
             cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
             cd AnyKernel3
