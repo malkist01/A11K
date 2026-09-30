@@ -1,42 +1,51 @@
-name: build AOSP
 on:
   workflow_dispatch:
+    inputs:
+      repository: { description: 'Repo', required: true, default: 'malkist01/A11K' }
+      branch: { description: 'Branch', required: true, default: 'ksu' }
+      defconfig: { description: 'Defconfig', required: true, default: 'stock_defconfig' }
 
 jobs:
   build:
-    name: Build Kernel
-    runs-on: ubuntu-22.04
-
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
+    - uses: actions/checkout@v4
+      with:
+        repository: ${{ github.event.inputs.repository }}
+        ref: ${{ github.event.inputs.branch }}
+        submodules: recursive
+        
     - name: Prepare timezone 
       run: |
             sudo rm /etc/localtime
             sudo ln -s /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+   
     - name: Install Dependencies
       run: |
             sudo apt update -y
             sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 -y
             sudo apt install libssl-dev -y
+   
     - name: Clone Toolchains
       run: |
             wget https://github.com/ZyCromerZ/Clang/releases/download/10.0.1-20220724-release/Clang-10.0.1-20220724.tar.gz -O clang.tar.gz
             mkdir -p clang && tar -xf clang.tar.gz -C clang
             git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git -b lineage-19.1 --depth=1 gcc64
             git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git -b lineage-19.1 --depth=1 gcc32
+ 
     - name: Setup Environment
       run: |
             echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%d%m%Y-%H%M")" >> $GITHUB_ENV
             echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
             echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
             echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
+
     - name: Clone kernelSU-Next
       run: |
             curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/0a5fa8b98e3e6fd51a5a57ca88f6018e6ec9cc8e | patch -p1
             curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/f7a6bb4c70684c5604c9b2fd5a0d39098ca28f2c.patch | patch -p1
             curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
+
     - name: Build Kernel
       run: |
             export ARCH=arm64
@@ -50,12 +59,14 @@ jobs:
               CROSS_COMPILE=$GCC64_PATH/bin/aarch64-linux-android- \
               CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-linux-gnueabi-         
             mv out/.config out/stock_defconfig.txt
+
     - name: Clone Anykernel3
       run: |
             git clone -b CPH2083 --depth=1 https://github.com/malkist01/anykernel3 AnyKernel3
             cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
             cd AnyKernel3
             zip -r "../Teletubies-${{ env.BUILD_TIME }}.zip" *
+
     - name: Upload Flashable zip
       uses: actions/upload-artifact@v4
       with:
