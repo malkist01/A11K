@@ -62,8 +62,7 @@ jobs:
            echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/stock_defconfig
            echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/stock_defconfig
            curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main
-           wget https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Patch/set_memory_to_49_and_low.patch
-           patch -p1 < set_memory_to_49_and_low.patch
+           curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Rekernel/rekernel_patches.sh" | bash -s 
            wget https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/Patch/susfs_patch_to_4.9.patch
            patch -p1 < susfs_patch_to_4.9.patch
            curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/susfs_inline_hook_patches.sh" | bash -s  
