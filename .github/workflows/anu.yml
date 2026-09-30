@@ -59,7 +59,7 @@ jobs:
       run: |
            wget https://raw.githubusercontent.com/rksuorg/kernel_patches/refs/heads/master/manual_hook/kernel-4.4_4.9.patch
            patch -p1 < kernel-4.4_4.9.patch
-           curl -LSs https://raw.githubusercontent.com/ThRE-Team/KernelSU-Next/main/kernel/setup.sh | bash -s dev-v3.4.0
+           curl -LSs https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/legacy/kernel/setup.sh | bash -s legacy
 
     - name: Build Kernel
       run: |
