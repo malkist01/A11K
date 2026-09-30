@@ -24,9 +24,22 @@ jobs:
    
     - name: Install Dependencies
       run: |
-            sudo apt update -y
-            sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 -y
-            sudo apt install libssl-dev -y
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends \
+            git curl wget \
+            build-essential gcc make \
+            bc bison flex \
+            libssl-dev libelf-dev \
+            libncurses5-dev \
+            python3 \
+            zip unzip \
+            cpio \
+            ccache \
+            binutils-aarch64-linux-gnu \
+            binutils-arm-linux-gnueabihf \
+            lld \
+            rsync \
+            clang
    
     - name: Clone Toolchains
       run: |
