@@ -2,21 +2,16 @@ name: CPH2083
 
 on:
   workflow_dispatch:
-    inputs:
-      repository: { description: 'Repo', required: true, default: 'malkist01/A11K' }
-      branch: { description: 'Branch', required: true, default: 'android-9' }
-      defconfig: { description: 'Defconfig', required: true, default: 'stock_defconfig' }
-
+  workflow_call:
+  push:
+    paths-ignore:
+      - 'README.md'
+    branches:
+      - test
 jobs:
   build:
     runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        repository: ${{ github.event.inputs.repository }}
-        ref: ${{ github.event.inputs.branch }}
-        submodules: recursive
-        
+    steps:        
     - name: Prepare timezone 
       run: |
             sudo rm /etc/localtime
@@ -54,6 +49,10 @@ jobs:
             echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
             echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
             echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
+            
+    - name: Clone Kernel
+      run: |
+            git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git -b lineage-19.1 --depth=1 gcc32
 
     - name: Clone kernelSU-Next
       run: |
