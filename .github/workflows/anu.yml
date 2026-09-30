@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       repository: { description: 'Repo', required: true, default: 'malkist01/A11K' }
-      branch: { description: 'Branch', required: true, default: 'ksu' }
+      branch: { description: 'Branch', required: true, default: 'android-9' }
       defconfig: { description: 'Defconfig', required: true, default: 'stock_defconfig' }
 
 jobs:
