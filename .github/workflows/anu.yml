@@ -57,9 +57,8 @@ jobs:
 
     - name: Clone kernelSU-Next
       run: |
-           curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/0a5fa8b98e3e6fd51a5a57ca88f6018e6ec9cc8e.patch | patch -p1
-           curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/f7a6bb4c70684c5604c9b2fd5a0d39098ca28f2c.patch | patch -p1
-           curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/665004cfa022a432eb9f4d95321d78772b1f75aa.patch | patch -p1
+           wget https://raw.githubusercontent.com/rksuorg/kernel_patches/refs/heads/master/manual_hook/kernel-4.4_4.9.patch
+           patch -p1 < kernel-4.4_4.9.patch
            curl -LSs https://raw.githubusercontent.com/ThRE-Team/KernelSU-Next/main/kernel/setup.sh | bash -s dev-v3.4.0
 
     - name: Build Kernel
