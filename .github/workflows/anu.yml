@@ -34,7 +34,8 @@ jobs:
             echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
     - name: Clone kernelSU-Next
       run: |
-            curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
+            curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/0a5fa8b98e3e6fd51a5a57ca88f6018e6ec9cc8e | patch -p1
+            curl FirmanBell/kernel_xiaomi_santoni_msm4.9/commit/f7a6bb4c70684c5604c9b2fd5a0d39098ca28f2c.patch | patch -p1
             curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh" | bash -s master
     - name: Build Kernel
       run: |
