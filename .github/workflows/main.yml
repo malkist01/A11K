@@ -36,7 +36,9 @@ jobs:
           
     - name: Clone Toolchains
       run: |
-        git clone --depth=1 https://github.com/techyminati/android_prebuilts_clang_host_linux-x86_clang-5484270 -b 9.0.3 clang
+        mkdir -p clang
+          aria2c -x 16 -s 16 -k 1M https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-9.0.0_r3/clang-4691093.tar.gz
+          tar -xzf clang-r547379.tar.gz -C clang
         git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b master-kernel-build-2021 gcc64
         git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master-kernel-build-2021 gcc32    
 
