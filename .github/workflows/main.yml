@@ -1,0 +1,80 @@
+name: Build Kernel CPH2083
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Kernel
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set Timezone
+      run: |
+        sudo rm /etc/localtime
+        sudo ln -s /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update -y
+        sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 libssl-dev -y
+
+    - name: Clone Toolchains
+      run: |
+        mkdir -p clang
+        aria2c -x 16 -s 16 -k 1M https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz
+          tar -xzf clang-r547379.tar.gz -C clang
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc64
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc32
+
+    - name: Setup Environment Variables
+      run: |
+        echo "BUILD_TIME=$(TZ=Asia/Jakarta date '+%d-%m-%Y')" >> $GITHUB_ENV
+        echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
+        echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
+        echo "GCC32_PATH=$GITHUB_WORKSPACE/gcc32" >> $GITHUB_ENV
+
+    - name: Clone SUKISU
+      run: |
+        curl -LSs "https://raw.githubusercontent.com/RapliVx/E.V.A/main/kernel/setup.sh" | bash -s main
+        curl -LSs "https://raw.githubusercontent.com/malkist02/KernelSU/master/kernel/setup.sh" | bash -s master
+
+    - name: Set Build Start Time
+      run: echo "BUILD_START=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Build Kernel
+      run: |
+        export ARCH=arm64
+        export PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$GCC32_PATH/bin:$PATH"
+        export KBUILD_BUILD_USER=Malkist
+        export KBUILD_BUILD_HOST=Android
+        export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
+        make O=out ARCH=arm64 stock_defconfig
+        make -j$(nproc) O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
+          CROSS_COMPILE=$GCC64_PATH/bin/aarch64-elf- \
+          CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-eabi-
+          
+    - name: Clone Anykernel3
+      run: |
+          git clone --depth=1 https://github.com/malkist02/anykernel3 -b CPH2083 AnyKernel3 
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+          cd AnyKernel3
+          zip -r "../Teletubies-CPH2083-${{ env.BUILD_TIME }}.zip" *
+          
+    - name: Upload Flashable zip
+      uses: actions/upload-artifact@v4
+      with:
+           name: Teletubies-CPH2083-${{ env.BUILD_TIME }}
+           path: AnyKernel3/*
+           
+    - name: Send to Telegram
+      run: |
+          curl -X POST "https://api.telegram.org/bot8691384652:AAHbKtOpbMp-Kc9JvKyil4aPsMfo5hdA-F8/sendDocument" \
+          -F chat_id=-5173179904 \
+          -F message_thread_id=120979 \
+          -F document=@"Teletubies-K4.19-mido-${{ env.BUILD_TIME }}.zip" \
+          -F caption=" Last Version is Cumming "
