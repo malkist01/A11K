@@ -21,16 +21,26 @@ jobs:
       run: |
         sudo apt update -y
         sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 libssl-dev -y
-
+    
+    - name: Cache Clang
+      uses: actions/cache@v5
+      id: cache-clang
+      with:
+          path: ${{ env.workspace_folder }}/clang
+          key: clang-r547379-ubuntu-latest
+          
     - name: Clone Toolchains
       run: |
         wget https://github.com/ZyCromerZ/Clang/releases/download/10.0.1-20220724-release/Clang-10.0.1-20220724.tar.gz -O clang.tar.gz
         mkdir -p clang && tar -xf clang.tar.gz -C clang
         git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 -b lineage-19.1 gcc64
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 -b lineage-19.1 gcc32
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 -b lineage-19.1 gcc32    
 
     - name: Setup Environment Variables
       run: |
+        ccache --max-size=2G
+        ccache --set-config=compression=true
+        echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> $GITHUB_ENV
         echo "BUILD_TIME=$(TZ=Asia/Jakarta date '+%d-%m-%Y')" >> $GITHUB_ENV
         echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
         echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
