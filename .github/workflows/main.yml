@@ -33,18 +33,12 @@ jobs:
              sudo swapon $SWAP_FILE
              unset SWAP_FILE
          fi
-    - name: Cache Clang
-      uses: actions/cache@v5
-      id: cache-clang
-      with:
-          path: ${{ env.workspace_folder }}/clang
-          key: clang-ubuntu-latest
           
     - name: Clone Toolchains
       run: |
-        git clone --depth=1 https://github.com/techyminati/android_prebuilts_clang_host_linux-x86_clang-5484270 clang
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 -b lineage-19.1 gcc64
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 -b lineage-19.1 gcc32    
+        git clone --depth=1 https://github.com/techyminati/android_prebuilts_clang_host_linux-x86_clang-5484270 -b 9.0.3 clang
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b master-kernel-build-2021 gcc64
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 -b master-kernel-build-2021 gcc32    
 
     - name: Setup Environment Variables
       run: |
