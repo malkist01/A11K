@@ -27,8 +27,8 @@ jobs:
         mkdir -p clang
         aria2c -x 16 -s 16 -k 1M https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/6a853dd45fe8f0d1821deb899c77a7b954b6306b/clang-r522817.tar.gz
           tar -xzf clang-r522817.tar.gz -C clang
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc64
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc32
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 -b lineage-19.1 gcc64
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 -b lineage-19.1 gcc32
 
     - name: Setup Environment Variables
       run: |
@@ -53,10 +53,10 @@ jobs:
         export KBUILD_BUILD_HOST=Android
         export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
         make O=out ARCH=arm64 stock_defconfig
-        make -j$(nproc) O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang \
+        make -j$(nproc) O=out ARCH=arm64 HOSTCC=clang DTC=dtc CC=clang \
           CLANG_TRIPLE=aarch64-linux-gnu- \
-          CROSS_COMPILE=$GCC64_PATH/bin/aarch64-elf- \
-          CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-eabi-
+          CROSS_COMPILE=$GCC64_PATH/bin/aarch64-linux-android- \
+          CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-linux-gnueabi-
           
     - name: Clone Anykernel3
       run: |
