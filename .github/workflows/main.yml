@@ -62,7 +62,7 @@ jobs:
     - name: Build Kernel
       run: |
         export ARCH=arm64
-        export PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$GCC32_PATH/bin:$PATH"
+        export PATH="$CLANG_PATH/bin:$GCC64_PATH/bin:$PATH"
         export KBUILD_BUILD_USER=Malkist
         export KBUILD_BUILD_HOST=Android
         export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
