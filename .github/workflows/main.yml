@@ -27,7 +27,7 @@ jobs:
       id: cache-clang
       with:
           path: ${{ env.workspace_folder }}/clang
-          key: clang-r547379-ubuntu-latest
+          key: clang-ubuntu-latest
           
     - name: Clone Toolchains
       run: |
@@ -60,7 +60,7 @@ jobs:
         export KBUILD_BUILD_USER=Malkist
         export KBUILD_BUILD_HOST=Android
         export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
-        make O=out ARCH=arm64 stock_defconfig
+        make O=out ARCH=arm64 stock_defconfig ksu.config
         make -j$(nproc) O=out ARCH=arm64 HOSTCC=clang DTC=dtc CC=clang \
           CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=$GCC64_PATH/bin/aarch64-linux-android- \
