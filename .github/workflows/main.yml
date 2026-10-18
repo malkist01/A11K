@@ -19,9 +19,19 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
-
+        sudo apt update -y
+        sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu
+         aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+         if [ -f /bin/swapon ]; then
+             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+             sudo swapoff $SWAP_FILE
+             sudo rm $SWAP_FILE
+             sudo fallocate -l 16G $SWAP_FILE
+             sudo chmod 600 $SWAP_FILE
+             sudo mkswap $SWAP_FILE
+             sudo swapon $SWAP_FILE
+             unset SWAP_FILE
+         fi
     - name: Cache Clang
       uses: actions/cache@v5
       id: cache-clang
@@ -31,7 +41,7 @@ jobs:
           
     - name: Clone Toolchains
       run: |
-        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-9.0.0_r3/clang-4691093.tar.gz -O clang.tar.gz
+        curl -Lsq https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-9.0.0_r3/clang-4691093.tar.gz -O clang.tar.gz
         mkdir -p clang && tar -xf clang.tar.gz -C clang
         git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 -b lineage-19.1 gcc64
         git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 -b lineage-19.1 gcc32    
