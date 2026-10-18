@@ -19,8 +19,9 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt update -y
-        sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu
+        sudo apt-get update
+        sudo apt-get -y install libncurses5
+        sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3 device-tree-compiler
          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
          if [ -f /bin/swapon ]; then
              export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
