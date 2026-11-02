@@ -103,7 +103,7 @@ jobs:
 
         if [ "$HOOK" == "manual" ]; then
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> "$DEFCONFIG"
-        if [ "$HOOK" == "tamperl" ]; then
+        elif [ "$HOOK" == "tamperl" ]; then
           echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> "$DEFCONFIG"
         elif [ "$HOOK" == "tracepoint" ]; then
           echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> "$DEFCONFIG"
