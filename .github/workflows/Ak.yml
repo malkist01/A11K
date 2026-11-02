@@ -131,7 +131,7 @@ jobs:
         echo "Build User: $KBUILD_BUILD_USER"
         echo "Build Host: $KBUILD_BUILD_HOST"
         echo "DATE=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_ENV
-        git clone --depth=1 https://gitlab.com/LeCmnGend/proton-clang -b clang-15 -b clang
+        git clone --depth=1 https://gitlab.com/LeCmnGend/proton-clang -b clang-15
         echo "$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin:/usr/bin:/bin" >> $GITHUB_PATH
 
     - name: check clang
