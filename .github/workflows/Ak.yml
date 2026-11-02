@@ -131,7 +131,7 @@ jobs:
         echo "Build User: $KBUILD_BUILD_USER"
         echo "Build Host: $KBUILD_BUILD_HOST"
         echo "DATE=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_ENV
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android11-release
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 -b lineage-19.1
         echo "$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin:/usr/bin:/bin" >> $GITHUB_PATH
         sed -i -E 's/\bpython2\b ?//g; s/  +/ /g' package
         bash package
