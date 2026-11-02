@@ -13,7 +13,7 @@ on:
         description: 'KernelSU variant'
         required: true
         type: choice
-        default: 'SukiSU-Ultra'
+        default: 'KernelSU'
         options:
           - 'SukiSU-Ultra'
           - 'KernelSU-Next'
@@ -48,12 +48,12 @@ on:
       build_user:
         description: 'set user (xxx@host)'
         required: true
-        default: 'Frostleaft07'
+        default: 'malkist01'
         type: string
       build_host:
         description: 'set host (user@xxx)'
         required: true
-        default: 'Darkness'
+        default: 'android'
         type: string
       timezone:
         description: 'set timezone'
@@ -63,7 +63,7 @@ on:
       hook:
         description: 'hook manual/tracepoint (hanya SUKISU)'
         required: true
-        default: 'manual'
+        default: 'tamper'
         type: choice
         options:
           - manual
@@ -103,6 +103,8 @@ jobs:
 
         if [ "$HOOK" == "manual" ]; then
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> "$DEFCONFIG"
+        if [ "$HOOK" == "tamperl" ]; then
+          echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> "$DEFCONFIG"
         elif [ "$HOOK" == "tracepoint" ]; then
           echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> "$DEFCONFIG"
         fi
@@ -119,7 +121,7 @@ jobs:
           patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
 
         elif [ "$KSU_VARIANT" == "KernelSU" ]; then
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
           wget https://github.com/Frostleaft07/realmeC12_realmeC15_AndroidR-kernel-source/releases/download/Files/0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
           patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
         else
@@ -131,9 +133,9 @@ jobs:
         echo "Build User: $KBUILD_BUILD_USER"
         echo "Build Host: $KBUILD_BUILD_HOST"
         echo "DATE=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_ENV
-        git clone --depth=1 https://gitlab.com/LeCmnGend/proton-clang -b clang-15
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android11-release
         echo "$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin:/usr/bin:/bin" >> $GITHUB_PATH
-
+        
     - name: check clang
       run: |
        clang -v
