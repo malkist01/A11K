@@ -103,7 +103,7 @@ jobs:
 
         if [ "$HOOK" == "manual" ]; then
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> "$DEFCONFIG"
-        elif [ "$HOOK" == "tamperl" ]; then
+        elif [ "$HOOK" == "tamper" ]; then
           echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> "$DEFCONFIG"
         elif [ "$HOOK" == "tracepoint" ]; then
           echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> "$DEFCONFIG"
@@ -122,8 +122,8 @@ jobs:
 
         elif [ "$KSU_VARIANT" == "KernelSU" ]; then
           curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
-          wget https://github.com/Frostleaft07/realmeC12_realmeC15_AndroidR-kernel-source/releases/download/Files/0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
-          patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
+          #wget https://github.com/Frostleaft07/realmeC12_realmeC15_AndroidR-kernel-source/releases/download/Files/0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
+          #patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
         else
           echo "Build tanpa KernelSU"
         fi
