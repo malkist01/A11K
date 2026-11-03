@@ -68,6 +68,7 @@ on:
         options:
           - manual
           - tracepoint
+          - tamper
 
 env:
   KBUILD_BUILD_USER: ${{ github.event.inputs.build_user }}
