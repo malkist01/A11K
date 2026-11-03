@@ -134,8 +134,8 @@ jobs:
         echo "Build User: $KBUILD_BUILD_USER"
         echo "Build Host: $KBUILD_BUILD_HOST"
         echo "DATE=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_ENV
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android11-release
-        echo "$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin:/usr/bin:/bin" >> $GITHUB_PATH
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android11-release clang
+        echo "$GITHUB_WORKSPACE/clang/bin:" >> $GITHUB_PATH
         
     - name: check clang
       run: |
