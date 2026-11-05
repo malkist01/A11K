@@ -1,220 +1,98 @@
-name: Endfield
+name: Build Kernel oppo
 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'select branch or id commit'
-        required: true
-        default: 'android-9'
-        type: string
-        
-      kernelsu_variant:
-        description: 'KernelSU variant'
-        required: true
-        type: choice
-        default: 'KernelSU'
-        options:
-          - 'SukiSU-Ultra'
-          - 'KernelSU-Next'
-          - 'KernelSU'
-          - 'None'
-      sukisu_branch:
-        description: 'sukisu branch'
-        required: true
-        default: 'nongki'
-        type: choice
-        options:
-          - nongki
-          - susfs-main
-      kpm:
-        description: 'build dengan KPM (hanya SUKISU)'
-        required: true
-        type: choice
-        default: 'yes'
-        options:
-          - 'yes'
-          - 'no'
-      localversion:
-        description: 'Custom LOCALVERSION (e.g., -MyKernel)'
-        required: true
-        default: '-Endfield 🪐'
-        type: string
-      defconfig:
-        description: 'pilih defconfig lain kalo mau (exm. nethunter)'
-        required: true
-        default: 'stock_defconfig'
-        type: string
-      build_user:
-        description: 'set user (xxx@host)'
-        required: true
-        default: 'malkist01'
-        type: string
-      build_host:
-        description: 'set host (user@xxx)'
-        required: true
-        default: 'android'
-        type: string
-      timezone:
-        description: 'set timezone'
-        required: true
-        default: 'Asia/Jakarta'
-        type: string
-      hook:
-        description: 'hook manual/tracepoint (hanya SUKISU)'
-        required: true
-        default: 'tamper'
-        type: choice
-        options:
-          - manual
-          - tracepoint
-          - tamper
+      config:
+          description: 'kernel config target'
+          required: true
+          default: 'stock_defconfig'
+      kernelname:
+          description: 'Kernel name'
+          required: true
+          default: 'Teletubies-OPPOA11-12'
 
-env:
-  KBUILD_BUILD_USER: ${{ github.event.inputs.build_user }}
-  KBUILD_BUILD_HOST: ${{ github.event.inputs.build_host }}
-  LOCALVERSION: ${{ github.event.inputs.localversion }}
-  TZ: ${{ github.event.inputs.timezone }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      TZ: Asia/Jakarta
+      CONFIG: ${{ github.event.inputs.config }}
+      KERNELNAME: ${{ github.event.inputs.kernelname }}
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.inputs.branch }}
-        fetch-depth: 1
-
-    - name: Setup SukiSU/KSU/KSUN
-      run: |
-        KSU_VARIANT="${{ github.event.inputs.kernelsu_variant }}"
-        KPM="${{ github.event.inputs.kpm }}"
-
-        if [ "$KSU_VARIANT" == "SukiSU-Ultra" ]; then
-          BRANCH="${{ github.event.inputs.sukisu_branch }}"
-          HOOK="${{ github.event.inputs.hook }}"
-          DEFCONFIG="arch/arm64/configs/${{ github.event.inputs.defconfig }}"
-
-        if [ "$BRANCH" == "susfs-main" ]; then
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-main
-        elif [ "$BRANCH" == "nongki" ]; then
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
-        fi
-
-        if [ "$HOOK" == "manual" ]; then
-          echo "CONFIG_KSU_MANUAL_HOOK=y" >> "$DEFCONFIG"
-        elif [ "$HOOK" == "tamper" ]; then
-          echo "CONFIG_KSU_TAMPER_SYSCALL_TABLE=y" >> "$DEFCONFIG"
-        elif [ "$HOOK" == "tracepoint" ]; then
-          echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> "$DEFCONFIG"
-        fi
-
-        if [ "$KPM" == "yes" ]; then
-          echo "CONFIG_KPM=y" >> "$DEFCONFIG"
-        elif [ "$KPM" == "no" ]; then
-          echo "Non KPM"
-        fi
-
-        elif [ "$KSU_VARIANT" == "KernelSU-Next" ]; then
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
-          wget https://github.com/Frostleaft07/realmeC12_realmeC15_AndroidR-kernel-source/releases/download/Files/0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
-          patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
-
-        elif [ "$KSU_VARIANT" == "KernelSU" ]; then
-          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
-          #wget https://github.com/Frostleaft07/realmeC12_realmeC15_AndroidR-kernel-source/releases/download/Files/0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
-          #patch -p1< 0001-Revert-kernelsu-set-ifdef-ke-if-defined-xxxx.patch
-        else
-          echo "Build tanpa KernelSU"
-        fi
-
-    - name: Setup Environment
-      run: |
-        echo "Build User: $KBUILD_BUILD_USER"
-        echo "Build Host: $KBUILD_BUILD_HOST"
-        echo "DATE=$(date +%Y-%m-%d-%H-%M-%S)" >> $GITHUB_ENV
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 -b android11-release clang
-        echo "$GITHUB_WORKSPACE/clang/bin:$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin:/usr/bin:/bin" >> $GITHUB_PATH
+      - name: Checkout
+        uses: actions/checkout@v4
         
-    - name: check clang
-      run: |
-       clang -v
+      - name: SukiSU Setup
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/refs/heads/main/kernel/setup.sh" | bash -s main
+          echo "CONFIG_KSU=y" >> ./arch/arm64/configs/$CONFIG
+          echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./arch/arm64/configs/$CONFIG
+          echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/$CONFIG
+          echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/$CONFIG
+          echo "CONFIG_KSU_TOOLKIT_SUPPORT=y" >> ./arch/arm64/configs/$CONFIG
+          curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
 
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-          swap-size-gb: 5
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc bison flex libssl-dev build-essential \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
+            gcc-arm-linux-gnueabihf python3 aria2 cpio
 
-    - name: Build Kernel
-      run: |
-        make CC=clang ARCH=arm64 O=~/out ${{ github.event.inputs.defconfig }}
-        echo "n" | make CC=clang ARCH=arm64 O=~/out -j$(nproc) \
-          HEADER_ARCH=arm64 \
-          SUBARCH=arm64 \
-          LD=ld.lld \
-          AR=llvm-ar \
-          NM=llvm-nm \
-          STRIP=llvm-strip \
-          READELF=llvm-readelf \
-          CROSS_COMPILE=aarch64-linux-android- \
-          CLANG_TRIPLE=aarch64-linux-gnu-
-    
-    - name: patch KPM
-      run: |
-        KSU_VARIANT="${{ github.event.inputs.kernelsu_variant }}"
-        KPM_ENABLE="${{ github.event.inputs.kpm }}"
+      - name: Clone AOSP Clang 21
+        run: |
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz
+          mkdir -p clang && tar -xf clang.tar.gz -C clang
 
-        if [ "$KSU_VARIANT" == "SukiSU-Ultra" ] && [ "$KPM_ENABLE" == "yes" ]; then
-          echo "patch file Image..."
-          cd "/home/runner/out/arch/arm64/boot"
-          wget https://github.com/SukiSU-Ultra/SukiSU_patch/raw/refs/heads/main/kpm/patch_linux
-          chmod +x patch_linux
-          ./patch_linux Image
-        if [ $? -eq 0 ]; then
-          rm -f Image
-          mv oImage Image
-          gzip -9 -c Image > Image.gz
-          echo "Done"
-        else
-          echo "Failed"
-        fi
-        else 
-          echo "tanpa KPM"
-        fi
-      continue-on-error: true
+      # 4. Set environment variables
+      - name: Export build vars
+        run: |
+          export KERNEL_DIR=$PWD
+          export CLANG_PATH=$PWD/clang/bin
+          echo "PATH=$CLANG_PATH:/usr/bin:$PATH" >> $GITHUB_ENV
+          echo "KERNEL_DIR=$KERNEL_DIR" >> $GITHUB_ENV
 
-    - name: anykernel ~ zipping
-      run: |
-         KSU_VARIANT="${{ github.event.inputs.kernelsu_variant }}"
-         ZIP=Endfield_${KSU_VARIANT}_${{ env.DATE }}_RMX2180_RUI2.zip
-         git clone https://github.com/Frostleaft07/AnyKernel3 -b mastah ~/any/
-         mv ~/out/arch/arm64/boot/Image.gz ~/any/
-         cd ~/any/ ; zip -r9 $ZIP *
+      - name: Start kernel build
+        run: |
+          export PATH="$PATH"
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          export CC=clang
+          export LD=ld.lld
+          export AR=llvm-ar
+          export NM=llvm-nm
+          export OBJCOPY=llvm-objcopy
+          export OBJDUMP=llvm-objdump
+          export STRIP=llvm-strip
+          export LLVM=1
+          export LLVM_IAS=1
+          export KBUILD_BUILD_USER=malkist
+          export KBUILD_BUILD_HOST=android
 
-    - name: Upload to Telegram
-      run: |
-         KSU_VARIANT="${{ github.event.inputs.kernelsu_variant }}"
-         ZIP=Endfield_${KSU_VARIANT}_${{ env.DATE }}_RMX2180_RUI2.zip
-         FILE_PATH="/home/runner/any/$ZIP"
-         curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendDocument" \
-         -F chat_id="${{ secrets.CHAT_ID }}" \
-         -F message_thread_id="${{ secrets.TOPIC_ID }}" \
-         -F caption="$(echo -e "$(date)\n\nRMX2185 UI2\n\nCommit: $(git log -1 --pretty='%h - %s (%ci)')")" \
-         -F document=@"$FILE_PATH" > /dev/null 2>&1
-      continue-on-error: true
+          mkdir -p out
+          make O=out $CONFIG
+          make -j$(nproc --all) O=out \
 
-    - name: Upload to Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          /home/runner/any/*.zip
-        name: ${{ github.event.inputs.kernelsu_variant }}-${{ github.run_id }}
-        tag_name: ${{ github.run_id }}
-        body: |
-          Variant: ${{ github.event.inputs.kernelsu_variant }}
-          sukisubranch: ${{ github.event.inputs.sukisu_branch }}
-          config: ${{ github.event.inputs.defconfig }}
-          KPM: ${{ github.event.inputs.kpm }}
-          Hook: ${{ github.event.inputs.hook }}
-          branch: ${{ github.event.inputs.branch }}
+      - name: Clone AnyKernel3
+        run: |
+          git clone -b CPH2083 https://github.com/malkist01/Anykernel3 AnyKernel
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel/
+
+      - name: Zip kernel
+        run: |
+          cd AnyKernel
+          zip -r9 Kernel-$KERNELNAME-$(date +%Y%m%d).zip ./*
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kernel-${{ env.KERNELNAME }}
+          path: AnyKernel/*.zip
