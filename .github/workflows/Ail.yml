@@ -134,7 +134,7 @@ jobs:
       - name: Integrate BakaSU
         working-directory: ${{ env.WORK }}/linux
         run: |
-          curl -LSs -o "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
+          curl -LSs "https://raw.githubusercontent.com/JackA1ltman/NonGKI_Kernel_Build_2nd/refs/heads/mainline/Patches/syscall_hook_patches.sh" | bash -s
           curl -fsSL -o "$RUNNER_TEMP/bakasu-setup.sh" \
             "https://raw.githubusercontent.com/leonardrua/BakaSU/${BAKASU_REF}/kernel/setup.sh"
           bash "$RUNNER_TEMP/bakasu-setup.sh" "$BAKASU_REF"
