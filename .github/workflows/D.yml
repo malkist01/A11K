@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Ambil source kernel
         uses: actions/checkout@v4
@@ -18,8 +18,20 @@ jobs:
 
       - name: Install tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y bc bison flex build-essential libssl-dev libelf-dev cpio zip gcc-14 g++-14 python2
+          sudo timedatectl set-timezone Asia/Jakarta
+          sudo apt update -y
+          sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu
+          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+          if [ -f /bin/swapon ]; then
+             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+             sudo swapoff $SWAP_FILE
+             sudo rm $SWAP_FILE
+             sudo fallocate -l 16G $SWAP_FILE
+             sudo chmod 600 $SWAP_FILE
+             sudo mkswap $SWAP_FILE
+             sudo swapon $SWAP_FILE
+             unset SWAP_FILE
+          fi
 
       - name: Ambil compiler GCC 4.9
         run: |
@@ -49,7 +61,7 @@ jobs:
         run: |
           set -o pipefail
           export PATH=$HOME/gcc64/bin:$HOME/gcc32/bin:$PATH
-          make O=out ARCH=arm64 HOSTCC=gcc-14 HOSTCXX=g++-14 OP4BFB_defconfig
+          make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ OP4BFB_defconfig
           sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
           sed -i '/CONFIG_KPROBES/d;/CONFIG_HAVE_KPROBES/d;/CONFIG_KPROBE_EVENTS/d;/CONFIG_KSU/d' out/.config
