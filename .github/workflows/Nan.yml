@@ -134,9 +134,7 @@ jobs:
       - name: Integrate KernelSU
         working-directory: ${{ env.WORK }}/linux
         run: |
-          curl -fsSL -o "$RUNNER_TEMP/kernelsu-setup.sh" \
-            "https://raw.githubusercontent.com/backslashxx/KernelSU/${KERNELSU_REF}/kernel/setup.sh"
-          bash "$RUNNER_TEMP/kernelsu-setup.sh" "$KERNELSU_REF"
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
 
       - name: Build kernel
         working-directory: ${{ env.WORK }}/linux
