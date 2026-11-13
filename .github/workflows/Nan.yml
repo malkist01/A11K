@@ -34,7 +34,7 @@ env:
 
   # External sources. Pin BAKASU_REF to a tag/commit for reproducible builds;
   # its setup script is executed during the build.
-  GCC_REPO: https://github.com/rokibhasansagar/linaro-toolchain-latest.git
+  GCC_REPO: https://github.com/rokibhasansagar/linaro-toolchain-latest/tree/latest-7
   PYTHON2_URL: https://github.com/NCLnclNCL/kernel-build/releases/download/python2.7.18/python2.7.18.zip
   ANYKERNEL_REPO: https://github.com/malkist01/AnyKernel3
   ANYKERNEL_BRANCH: CPH2083
@@ -103,7 +103,7 @@ jobs:
       - name: Download GCC Linaro 6.3.1
         if: steps.toolchain.outputs.cache-hit != 'true'
         run: |
-          git clone --quiet --depth=1 -b latest-7 "$GCC_REPO" "$GCC_DIR"
+          git clone --quiet --depth=1 "$GCC_REPO" "$GCC_DIR"
           rm -rf "$GCC_DIR/.git" # not needed, and it roughly doubles the cache size
 
       - name: Activate Python 2
