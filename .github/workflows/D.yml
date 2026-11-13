@@ -19,7 +19,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison flex build-essential libssl-dev libelf-dev cpio zip gcc-9 g++-9 python2
+          sudo apt-get install -y bc bison flex build-essential libssl-dev libelf-dev cpio zip gcc-14 g++-14 python2
 
       - name: Ambil compiler GCC 4.9
         run: |
@@ -30,9 +30,9 @@ jobs:
         run: |
           grep -rlE -- '-Werror([-=][A-Za-z0-9_-]+)?' --include=Makefile . | xargs -r sed -i -E 's/-Werror([-=][A-Za-z0-9_-]+)?//g'
 
-      - name: Pasang KernelSU resmi v0.9.5
+      - name: Pasang KernelSU
         run: |
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
 
       - name: DIAGNOSA - matikan panggilan ksu_enable_sucompat & ksu_enable_ksud
         run: |
@@ -49,7 +49,7 @@ jobs:
         run: |
           set -o pipefail
           export PATH=$HOME/gcc64/bin:$HOME/gcc32/bin:$PATH
-          make O=out ARCH=arm64 HOSTCC=gcc-9 HOSTCXX=g++-9 OP4BFB_defconfig
+          make O=out ARCH=arm64 HOSTCC=gcc-14 HOSTCXX=g++-14 OP4BFB_defconfig
           sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
           sed -i '/CONFIG_KPROBES/d;/CONFIG_HAVE_KPROBES/d;/CONFIG_KPROBE_EVENTS/d;/CONFIG_KSU/d' out/.config
