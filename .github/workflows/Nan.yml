@@ -38,7 +38,7 @@ env:
   PYTHON2_URL: https://github.com/NCLnclNCL/kernel-build/releases/download/python2.7.18/python2.7.18.zip
   ANYKERNEL_REPO: https://github.com/malkist01/AnyKernel3
   ANYKERNEL_BRANCH: CPH2083
-  BAKASU_REF: main
+  KERNELSU_REF: main
 
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   CCACHE_MAXSIZE: 2G
@@ -90,7 +90,7 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ runner.os }}-a5s-gcc-v${{ vars.VERSION || '1' }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-${{ runner.os }}-a5s-gcc-v${{ vars.VERSION || '1' }}-
+            ccache-${{ runner.os }}-a11k-gcc-v${{ vars.VERSION || '1' }}-
 
       - name: Download Python 2
         if: steps.toolchain.outputs.cache-hit != 'true'
@@ -131,12 +131,12 @@ jobs:
           git clone --quiet --depth=1 --branch "$ANYKERNEL_BRANCH" "$ANYKERNEL_REPO" AnyKernel3
           echo "KERNEL_COMMIT=$(git -C linux rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
-      - name: Integrate BakaSU
+      - name: Integrate KernelSU
         working-directory: ${{ env.WORK }}/linux
         run: |
-          curl -fsSL -o "$RUNNER_TEMP/bakasu-setup.sh" \
-            "https://raw.githubusercontent.com/leonardrua/BakaSU/${BAKASU_REF}/kernel/setup.sh"
-          bash "$RUNNER_TEMP/bakasu-setup.sh" "$BAKASU_REF"
+          curl -fsSL -o "$RUNNER_TEMP/kernelsu-setup.sh" \
+            "https://raw.githubusercontent.com/backslashxx/KernelSU/${KERNELSU_REF}/kernel/setup.sh"
+          bash "$RUNNER_TEMP/kernelsu-setup.sh" "$KERNELSU_REF"
 
       - name: Build kernel
         working-directory: ${{ env.WORK }}/linux
@@ -190,7 +190,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ runner.os }}-a5s-gcc-v${{ vars.VERSION || '1' }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-a11k-gcc-v${{ vars.VERSION || '1' }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Package AnyKernel3 zip
         working-directory: ${{ env.WORK }}/AnyKernel3
@@ -208,6 +208,6 @@ jobs:
             - Branch: ${{ inputs.KERNEL_BRANCH }} (`${{ env.KERNEL_COMMIT }}`)
             - Config: ${{ inputs.KERNEL_DEFCONFIG }}
             - Toolchain: GCC Linaro 6.3.1-2017.05
-            - BakaSU: ${{ env.BAKASU_REF }}
+            - KernelSU: ${{ env.KERNELSU_REF }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
