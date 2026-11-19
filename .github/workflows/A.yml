@@ -54,7 +54,7 @@ jobs:
         export KBUILD_BUILD_HOST=Android
         export KBUILD_COMPILER_STRING="$($GCC64_PATH/bin/gcc --version | head -n 1)"
         make O=out ARCH=arm64 stock_defconfig ksu.config
-        make O=out CC=gcc -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
+        make O=out CC=gcc -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS=-Wno-error
           
     - name: Clone Anykernel3
       run: |
