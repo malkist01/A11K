@@ -22,7 +22,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
     - name: Clone Toolchains
       run: |
-          git clone https://github.com/rokibhasansagar/linaro-toolchain-latest.git -b latest-7 --depth=1 clang
+          git clone https://github.com/rokibhasansagar/linaro-toolchain-latest.git -b latest-7 --depth=1 gcc64
     - name: Set up ccache
       run: |
         ccache --max-size=2G
@@ -31,7 +31,7 @@ jobs:
     - name: Setup Environment Variables
       run: |
         echo "BUILD_TIME=$(TZ=Asia/Jakarta date '+%d-%m-%Y')" >> $GITHUB_ENV
-        echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
+        echo "GCC64_PATH=$GITHUB_WORKSPACE/gcc64" >> $GITHUB_ENV
         echo "EXTRA_FOLDER=$GITHUB_WORKSPACE/extra" >> $GITHUB_ENV
     - name: Clone KernelSU
       run: |
@@ -41,11 +41,18 @@ jobs:
 
     - name: Build Kernel
       run: |
+        sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
+        echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
+        sed -i '/CONFIG_KPROBES/d;/CONFIG_HAVE_KPROBES/d;/CONFIG_KPROBE_EVENTS/d;/CONFIG_KSU/d' out/.config
+        echo "CONFIG_KPROBES=y" >> out/.config
+        echo "CONFIG_HAVE_KPROBES=y" >> out/.config
+        echo "CONFIG_KPROBE_EVENTS=y" >> out/.config
+        echo "CONFIG_KSU=y" >> out/.config
         export ARCH=arm64
-        export PATH="$CLANG_PATH/bin:$PATH"
+        export PATH="$GCC64_PATH/bin:$PATH"
         export KBUILD_BUILD_USER=Malkist
         export KBUILD_BUILD_HOST=Android
-        export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
+        export KBUILD_COMPILER_STRING="$($GCC64_PATH/bin/gcc --version | head -n 1)"
         make O=out ARCH=arm64 stock_defconfig ksu.config
         make O=out CC=gcc -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
           
