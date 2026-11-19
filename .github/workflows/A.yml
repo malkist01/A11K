@@ -48,7 +48,7 @@ jobs:
         export KBUILD_BUILD_HOST=Android
         export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
         make O=out ARCH=arm64 stock_defconfig ksu.config
-        make O=out CC=clang LD=ld.lld LLVM=1 LLVM_IAS=1 -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
+        make O=out CC=clang -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
           
     - name: Clone Anykernel3
       run: |
