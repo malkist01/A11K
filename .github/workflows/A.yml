@@ -51,7 +51,7 @@ jobs:
           
     - name: Clone Anykernel3
       run: |
-          git clone --depth=1 https://github.com/malkist01/anykernel3 -b CPH2083 AnyKernel3 
+          git clone --recursive --depth=1 https://github.com/malkist01/anykernel3 -b CPH2083 AnyKernel3 
           cp out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
           cd AnyKernel3
           zip -r "../Teletubies-KSU-A11K-${{ env.BUILD_TIME }}.zip" *
