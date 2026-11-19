@@ -35,7 +35,7 @@ jobs:
 
       - name: Ambil compiler GCC 4.9
         run: |
-          git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 $HOME/gcc64
+          git clone --depth=1 https://github.com/rokibhasansagar/linaro-toolchain-latest -b latest-7 $HOME/gcc64
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 $HOME/gcc32
 
       - name: Hilangkan -Werror paksa
@@ -60,7 +60,7 @@ jobs:
           echo "CONFIG_KSU=y" >> out/.config
           yes "" | make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ CROSS_COMPILE=aarch64-linux-android- oldconfig || true
           make -j$(nproc) O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ \
-            CROSS_COMPILE=aarch64-linux-android- KCFLAGS=-Wno-error \
+            CROSS_COMPILE=aarch64-linux-gnu- KCFLAGS=-Wno-error \
             CROSS_COMPILE_ARM32=arm-linux-androideabi- Image.gz-dtb 2>&1 | tee build.log
 
       - name: Kumpulkan hasil
