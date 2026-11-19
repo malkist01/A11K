@@ -44,6 +44,7 @@ jobs:
       - name: Compile kernel
         run: |
           set -o pipefail
+          export PATH="$HOME/bin:$PATH"
           make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ stock_defconfig
           sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
