@@ -22,8 +22,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
     - name: Clone Toolchains
       run: |
-          wget https://github.com/greenforce-project/greenforce_clang/releases/download/20261017/gf-clang-24.0.0-20261017.tar.gz -O clang.tar.gz
-          mkdir -p clang && tar -xf clang.tar.gz -C clang
+          git clone https://gitlab.com/LeCmnGend/proton-clang -b clang-15 --depth=1 clang
     - name: Set up ccache
       run: |
         ccache --max-size=2G
