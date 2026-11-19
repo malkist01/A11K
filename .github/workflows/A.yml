@@ -22,7 +22,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
     - name: Clone Toolchains
       run: |
-          git clone https://github.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-6443078 -b 10.0 --depth=1 clang
+          git clone https://github.com/rokibhasansagar/linaro-toolchain-latest.git -b latest-7 --depth=1 clang
     - name: Set up ccache
       run: |
         ccache --max-size=2G
