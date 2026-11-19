@@ -1,75 +1,72 @@
-name: Build Kernel A11K (OP4BFB)
+name: Build Kernel Test
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
+    name: Build Kernel
     runs-on: ubuntu-26.04
+
     steps:
-      - name: Ambil source kernel
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Perbaiki include kernel-4.9
-        run: |
-          ln -sfn . kernel-4.9
+    - name: Set Timezone
+      run: |
+        sudo rm /etc/localtime
+        sudo ln -s /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
+    - name: Clone Toolchains
+      run: |
+          wget https://github.com/greenforce-project/greenforce_clang/releases/download/20261017/gf-clang-24.0.0-20261017.tar.gz -O clang.tar.gz
+          mkdir -p clang && tar -xf clang.tar.gz -C clang
+    - name: Set up ccache
+      run: |
+        ccache --max-size=2G
+        ccache --set-config=compression=true
+        echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+    - name: Setup Environment Variables
+      run: |
+        echo "BUILD_TIME=$(TZ=Asia/Jakarta date '+%d-%m-%Y')" >> $GITHUB_ENV
+        echo "CLANG_PATH=$GITHUB_WORKSPACE/clang" >> $GITHUB_ENV
+        echo "EXTRA_FOLDER=$GITHUB_WORKSPACE/extra" >> $GITHUB_ENV
+    - name: Clone KernelSU
+      run: |
+         curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
+    - name: Set Build Start Time
+      run: echo "BUILD_START=$(date +%s)" >> $GITHUB_ENV
 
-      - name: Install tools
-        run: |
-          sudo timedatectl set-timezone Asia/Jakarta
-          sudo apt update -y
-          sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu
-          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
-          if [ -f /bin/swapon ]; then
-             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
-             sudo swapoff $SWAP_FILE
-             sudo rm $SWAP_FILE
-             sudo fallocate -l 16G $SWAP_FILE
-             sudo chmod 600 $SWAP_FILE
-             sudo mkswap $SWAP_FILE
-             sudo swapon $SWAP_FILE
-             unset SWAP_FILE
-          fi
-
-      - name: Hilangkan -Werror paksa
-        run: |
-          grep -rlE -- '-Werror([-=][A-Za-z0-9_-]+)?' --include=Makefile . | xargs -r sed -i -E 's/-Werror([-=][A-Za-z0-9_-]+)?//g'
-
-      - name: Pasang KernelSU
-        run: |
-          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
-
-      - name: Compile kernel
-        run: |
-          set -o pipefail
-          export PATH="$HOME/bin:$PATH"
-          make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ stock_defconfig
-          sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
-          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
-          sed -i '/CONFIG_KPROBES/d;/CONFIG_HAVE_KPROBES/d;/CONFIG_KPROBE_EVENTS/d;/CONFIG_KSU/d' out/.config
-          echo "CONFIG_KPROBES=y" >> out/.config
-          echo "CONFIG_HAVE_KPROBES=y" >> out/.config
-          echo "CONFIG_KPROBE_EVENTS=y" >> out/.config
-          echo "CONFIG_KSU=y" >> out/.config
-          yes "" | make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ CROSS_COMPILE=aarch64-linux-android- oldconfig || true
-          make -j$(nproc) O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ \
-            CROSS_COMPILE=aarch64-linux-android- KCFLAGS=-Wno-error \
-            CROSS_COMPILE_ARM32=arm-linux-androideabi- Image.gz-dtb 2>&1 | tee build.log
-
-      - name: Kumpulkan hasil
-        if: always()
-        run: |
-          mkdir -p hasil
-          ls -la out/arch/arm64/boot/ > hasil/isi-folder-boot.txt 2>&1 || true
-          cp out/arch/arm64/boot/Image.gz-dtb hasil/ 2>/dev/null || true
-          cp out/.config hasil/config-hasil 2>/dev/null || true
-          cp build.log hasil/ 2>/dev/null || true
-
-      - name: Upload hasil
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-a11k-ksu-diagnosa
-          path: hasil/*
+    - name: Build Kernel
+      run: |
+        export ARCH=arm64
+        export PATH="$CLANG_PATH/bin:$PATH"
+        export KBUILD_BUILD_USER=Malkist
+        export KBUILD_BUILD_HOST=Android
+        export KBUILD_COMPILER_STRING="$($CLANG_PATH/bin/clang --version | head -n 1)"
+        make O=out ARCH=arm64 stock_defconfig ksu.config
+        make O=out CC=clang LD=ld.lld LLVM=1 LLVM_IAS=1 -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
+          
+    - name: Clone Anykernel3
+      run: |
+          git clone --depth=1 https://github.com/malkist01/anykernel3 -b CPH2083 AnyKernel3 
+          cp out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+          cd AnyKernel3
+          zip -r "../Teletubies-KSU-A11K-${{ env.BUILD_TIME }}.zip" *
+          
+    - name: Upload Flashable zip
+      uses: actions/upload-artifact@v4
+      with:
+           name: Teletubies-KSU-A11K-${{ env.BUILD_TIME }}
+           path: AnyKernel3/*
+           
+    - name: Send to Telegram
+      run: |
+          curl -X POST "https://api.telegram.org/bot8691384652:AAHbKtOpbMp-Kc9JvKyil4aPsMfo5hdA-F8/sendDocument" \
+          -F chat_id=-5173179904 \
+          -F message_thread_id=120979 \
+          -F document=@"Teletubies-KSU-A11K-${{ env.BUILD_TIME }}.zip" \
+          -F caption=" Last Version is Cumming "
