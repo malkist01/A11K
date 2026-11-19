@@ -1,0 +1,74 @@
+name: Build Kernel A11K (OP4BFB)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Ambil source kernel
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Perbaiki include kernel-4.9
+        run: |
+          ln -sfn . kernel-4.9
+
+      - name: Install tools
+        run: |
+          sudo timedatectl set-timezone Asia/Jakarta
+          sudo apt update -y
+          sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu
+          aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+          if [ -f /bin/swapon ]; then
+             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+             sudo swapoff $SWAP_FILE
+             sudo rm $SWAP_FILE
+             sudo fallocate -l 16G $SWAP_FILE
+             sudo chmod 600 $SWAP_FILE
+             sudo mkswap $SWAP_FILE
+             sudo swapon $SWAP_FILE
+             unset SWAP_FILE
+          fi
+
+      - name: Hilangkan -Werror paksa
+        run: |
+          grep -rlE -- '-Werror([-=][A-Za-z0-9_-]+)?' --include=Makefile . | xargs -r sed -i -E 's/-Werror([-=][A-Za-z0-9_-]+)?//g'
+
+      - name: Pasang KernelSU
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
+
+      - name: Compile kernel
+        run: |
+          set -o pipefail
+          make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ stock_defconfig
+          sed -i '/CONFIG_CC_STACKPROTECTOR_STRONG/d;/CONFIG_CC_STACKPROTECTOR_REGULAR/d;/CONFIG_CC_STACKPROTECTOR_NONE/d' out/.config
+          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> out/.config
+          sed -i '/CONFIG_KPROBES/d;/CONFIG_HAVE_KPROBES/d;/CONFIG_KPROBE_EVENTS/d;/CONFIG_KSU/d' out/.config
+          echo "CONFIG_KPROBES=y" >> out/.config
+          echo "CONFIG_HAVE_KPROBES=y" >> out/.config
+          echo "CONFIG_KPROBE_EVENTS=y" >> out/.config
+          echo "CONFIG_KSU=y" >> out/.config
+          yes "" | make O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ CROSS_COMPILE=aarch64-linux-android- oldconfig || true
+          make -j$(nproc) O=out ARCH=arm64 HOSTCC=gcc HOSTCXX=g++ \
+            CROSS_COMPILE=aarch64-linux-android- KCFLAGS=-Wno-error \
+            CROSS_COMPILE_ARM32=arm-linux-androideabi- Image.gz-dtb 2>&1 | tee build.log
+
+      - name: Kumpulkan hasil
+        if: always()
+        run: |
+          mkdir -p hasil
+          ls -la out/arch/arm64/boot/ > hasil/isi-folder-boot.txt 2>&1 || true
+          cp out/arch/arm64/boot/Image.gz-dtb hasil/ 2>/dev/null || true
+          cp out/.config hasil/config-hasil 2>/dev/null || true
+          cp build.log hasil/ 2>/dev/null || true
+
+      - name: Upload hasil
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-a11k-ksu-diagnosa
+          path: hasil/*
